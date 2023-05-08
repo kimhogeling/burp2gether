@@ -1,0 +1,11 @@
+{
+  "provide": {
+    "ext-grpc": "*"
+  },
+  "require": {
+    "cloudevents/sdk-php": "^1.0",
+    "google/cloud-functions-framework": "^1.1",
+    "google/cloud-storage": "^1.23",
+    "google/cloud-firestore": "^1.19"
+  }
+}
