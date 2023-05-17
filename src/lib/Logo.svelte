@@ -20,7 +20,7 @@
 {/if}
 {#if sloganVisible}
   <div class="slogan" in:fly="{{ x: 200, duration: 700, delay: 1300 }}">
-    and <span class="logo-colored-letter">4</span> eachother!
+    and <span class="logo-colored-letter">4</span> each other!
   </div>
 {/if}
 
