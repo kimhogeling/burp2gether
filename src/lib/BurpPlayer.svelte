@@ -1,7 +1,7 @@
 <script>
   import {getDownloadURL, getStorage, ref} from "firebase/storage";
   // icons: https://svelte-icons-explorer.vercel.app/
-  import {TiMediaPause, TiNotes} from "svelte-icons/ti";
+  import {TiNotes} from "svelte-icons/ti";
 
   // src for new recording, which is not yet in storage
   export let newBurpBlobString;
@@ -12,6 +12,7 @@
   // burp entry from DB
   export let burp;
   const storage = getStorage();
+  let injectAudio = false;
   let burpStorageURL;
   let burpStorageFileType;
   let error = null;
@@ -48,21 +49,30 @@
     }
   }
 
-  function playOrPause() {
-    let audioElement = this.parentNode.querySelector('audio');
+  function play(event, button = this) {
+    // console.info(event, button, { playing })
+
     if (playing) {
-      audioElement.querySelector('audio').pause();
-      playing = false;
       return;
     }
 
+    // the audio tag is not injected until the user clicks the play button
+    if (!injectAudio) {
+      injectAudio = true;
+      // wait an event loop, so that the audio element below can be injected
+      setTimeout(() => play(event, button), 1);
+      return;
+    }
+
+    const audioElement = button.parentNode.querySelector('audio');
     audioElement.load();
-    audioElement.onloadeddata =  () => {
+    audioElement.onloadeddata = () => {
       audioElement.play();
       playing = true;
       audioElement.onended = () => {
         playing = false;
-        audioElement.onloadeddata = () => {};
+        audioElement.onloadeddata = () => {
+        };
       };
     };
   }
@@ -77,17 +87,15 @@
 {/if}
 
 {#if newBurpBlobString || burpStorageURL}
-  <button on:click={playOrPause} class="icon-button {playing ? 'playing' : ''}">
-    {#if playing}
-      <TiMediaPause/>
-    {/if}
-    {#if !playing}
-      <TiNotes/>
+  <button on:click={play} class="icon-button {playing ? 'playing' : ''}">
+    <TiNotes/>
+    {#if injectAudio}
+      <audio>
+        <source src={newBurpBlobString || burpStorageURL}
+                type="{burpStorageFileType || supportedAudioMimeType}"/>
+      </audio>
     {/if}
   </button>
-  <audio>
-    <source src={newBurpBlobString || burpStorageURL} type="{burpStorageFileType || supportedAudioMimeType}" />
-  </audio>
 {/if}
 
 <style>
