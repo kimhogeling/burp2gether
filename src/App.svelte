@@ -5,6 +5,7 @@
   import BurpList from "./lib/BurpList.svelte";
   import Friends from "./lib/Friends.svelte";
   import Share from "./lib/Share.svelte";
+  import {fly} from 'svelte/transition';
 
   let loggedIn = false;
   let user;
@@ -21,6 +22,11 @@
       loggedIn = !!u;
     })
   }
+
+  let showShare = false;
+  setTimeout(() => {
+    showShare = true
+  }, 1)
 </script>
 
 <div class="content">
@@ -44,7 +50,11 @@
       <BurpList {user} {friends} {supportedAudioMimeType}/>
     {/if}
 
-    <Share/>
+    {#if showShare}
+      <div in:fly="{{ x: 200, duration: 700, delay: 5000 }}">
+        <Share />
+      </div>
+    {/if}
   {/if}
 </div>
 

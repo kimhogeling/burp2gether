@@ -103,7 +103,7 @@
     {#each ([...burpsByDays.entries()] || []) as day }
       <DayLine dateString={day[0]}/>
       {#each day[1] as burp (burp.id)}
-        <div class="card play-burp" transition:slide>
+        <div class="card play-burp">
           <BurpPlayer {burp} {supportedAudioMimeType} />
           <p class="nickname">{getNickname(burp.uid)}</p>
           <Reactions {burp} {user} {yourWinnerEachDay} />
