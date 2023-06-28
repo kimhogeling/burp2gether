@@ -100,11 +100,12 @@
 
 <style>
   .icon-button {
-    transition: transform 1s;
+    transition: transform 1.5s, box-shadow 1.5s;
   }
 
   .icon-button.playing {
-    transform: scale(1.1) rotate(2deg);
+    transform: scale(1.2) rotate(2deg);
+    box-shadow: 5px 5px 10px rgba(0,0,0,0.7 );
   }
 
   .error {
