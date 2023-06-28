@@ -33,7 +33,7 @@
   export let user
   export let friends;
   export let supportedAudioMimeType;
-  const supportedFileExtension = supportedAudioMimeType.split('/')[1];
+  const supportedFileExtension = supportedAudioMimeType?.split('/')[1];
 
 
   const burpsRef = collection(getFirestore(), 'burp');
@@ -52,8 +52,7 @@
         yourWinnerEachDay.set(burp.date, burp.id);
       }
     });
-
-    console.log(burpsByDays);
+    // console.info(burpsByDays);
   });
 
   $: youHaveBurpedToday =

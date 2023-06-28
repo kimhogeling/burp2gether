@@ -20,7 +20,7 @@
   let triggeringRecording = false;
   let triggeringStop = false;
   let stopRecording = () => {
-    console.log('initial empty stop function');
+    // console.info('initial empty stop function');
   };
 
   function killStream(stream) {
@@ -54,7 +54,7 @@
       })
     })
     .finally(() => {
-      console.log(`did init recorder and it works${recorderWorks ? '' : ' NOT!!'}`)
+      // console.info(`did init recorder and it works${recorderWorks ? '' : ' NOT!!'}`)
       didInit = true;
     })
   });
@@ -72,7 +72,7 @@
         globalStream = stream;
         stopRecording = () => {
           triggeringStop = true;
-          console.log('replaced stop function')
+          // console.info('replaced stop function')
           rec.stop();
         }
       });
@@ -85,7 +85,7 @@
         newBurpBlobString = window.URL.createObjectURL(newBlob);
 
         stopRecording = () => {
-          console.log('third stop function');
+          // console.info('third stop function');
         };
       });
       rec.start();
