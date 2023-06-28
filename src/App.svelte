@@ -14,7 +14,7 @@
   const audioOptions = ['audio/webm', 'audio/mp4'];
   const supportedAudioMimeType = audioOptions.find(MediaRecorder.isTypeSupported) || null;
 
-  if (false || supportedAudioMimeType) {
+  if (supportedAudioMimeType) {
     loadingUser = true;
     getAuth().onAuthStateChanged(u => {
       loadingUser = false;
