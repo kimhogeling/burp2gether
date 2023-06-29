@@ -52,7 +52,6 @@
         yourWinnerEachDay.set(burp.date, burp.id);
       }
     });
-    // console.info(burpsByDays);
   });
 
   $: youHaveBurpedToday =

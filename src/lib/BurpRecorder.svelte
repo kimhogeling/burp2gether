@@ -19,9 +19,7 @@
   let globalStream = null;
   let triggeringRecording = false;
   let triggeringStop = false;
-  let stopRecording = () => {
-    // console.info('initial empty stop function');
-  };
+  let stopRecording = () => {};
 
   function killStream(stream) {
     [...stream.getAudioTracks()].forEach(t => t.stop());
@@ -54,7 +52,6 @@
       })
     })
     .finally(() => {
-      // console.info(`did init recorder and it works${recorderWorks ? '' : ' NOT!!'}`)
       didInit = true;
     })
   });
@@ -72,7 +69,6 @@
         globalStream = stream;
         stopRecording = () => {
           triggeringStop = true;
-          // console.info('replaced stop function')
           rec.stop();
         }
       });
@@ -84,9 +80,7 @@
         newBlob = new Blob(audioChunks, {type: supportedAudioMimeType});
         newBurpBlobString = window.URL.createObjectURL(newBlob);
 
-        stopRecording = () => {
-          // console.info('third stop function');
-        };
+        stopRecording = () => {};
       });
       rec.start();
     });

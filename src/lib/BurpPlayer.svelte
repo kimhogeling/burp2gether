@@ -50,8 +50,6 @@
   }
 
   function play(event, button = this) {
-    // console.info(event, button, { playing })
-
     if (playing) {
       return;
     }

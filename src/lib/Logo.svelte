@@ -38,11 +38,7 @@
 
 
   .slogan {
-    /*font-family: Caveat, serif;*/
-    /*font-family: 'Luckiest Guy';*/
-    /*font-family: 'Press Start 2P';*/
     color: var(--color-four);
-    /*font-size: 2.5rem;*/
     font-size: 2rem;
     text-align: center;
     text-shadow: black 0 0 1px;
