@@ -4,6 +4,7 @@ export class Burp {
     this.uid = uid;
     this.date = date;
     this.filename = filename;
+    // List of uids per reaction key (not Reaction)
     this.reactions = reactions;
   }
 

@@ -1,19 +1,20 @@
 
 <script>
   import {doc, getFirestore, updateDoc} from "firebase/firestore";
+  import {Reaction} from "../types/Reaction.js";
 
   export let burp;
   export let user;
   export let yourWinnerEachDay;
 
   const REACTIONS = [
-    {key: 'OKAY', smiley: '🙂', description: 'Okay'},
-    {key: 'WOW', smiley: '🤩', description: 'Wow!'},
-    {key: 'WTF', smiley: '🤯', description: 'WTF!'},
-    {key: 'HAHA', smiley: '🤣', description: 'Haha'},
-    {key: 'EWW', smiley: '🤢', description: 'Ewww'},
-    {key: 'SAD', smiley: '😢', description: 'Sad..'},
-    {key: 'WIN', smiley: '🏆', description: 'Today\'s Winner!', hide: true},
+    Reaction.of('OKAY', '🙂', 'Okay'),
+    Reaction.of('WOW', '🤩', 'Wow!'),
+    Reaction.of('WTF', '🤯', 'WTF!'),
+    Reaction.of('HAHA', '🤣', 'Haha'),
+    Reaction.of('EWW', '🤢', 'Ewww'),
+    Reaction.of('SAD', '😢', 'Sad..'),
+    Reaction.of('WIN', '🏆', 'Today\'s Winner!', true),
   ];
 
   const winnerReaction = REACTIONS.find(r => r.key === 'WIN');
@@ -52,7 +53,7 @@
       {#if !reaction.hide}
       <span class="smiley" on:click={() => addReaction(reaction)} title={reaction.description}>
         {reaction.smiley}
-        <span class="counter">{((burp.reactions || {})[reaction.key] || []).length || ''}</span>
+        <span class="counter">{(burp.reactions || {})[reaction.key]?.length || ''}</span>
       </span>
       {/if}
     {/each}
@@ -61,7 +62,7 @@
     <span class="smiley big" on:click={() => addReaction(winnerReaction)}
           title={winnerReaction.description}>
     {winnerReaction.smiley}
-      <span class="counter">{((burp.reactions || {})[winnerReaction.key] || []).length || ''}</span>
+      <span class="counter">{(burp.reactions || {})[winnerReaction.key]?.length || ''}</span>
   </span>
   </div>
 </div>
