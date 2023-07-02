@@ -1,5 +1,5 @@
 <script>
-  import {getAuth, GoogleAuthProvider, signInWithPopup, signOut} from "firebase/auth"
+  import {getAuth, GoogleAuthProvider, signInWithPopup} from "firebase/auth"
   import {slide} from 'svelte/transition';
 
   let auth = getAuth();
@@ -9,10 +9,7 @@
 </script>
 
 <div class="card" transition:slide>
-  {#if user}
-    {user?.displayName.split(' ')[0]}
-    <button on:click={() => signOut(auth)}>sign out</button>
-  {:else}
+  {#if !user}
     <p>Welcome to burp2gether!</p>
     <p>The place to share burps together with your friends.</p>
     <p>Login to start burping together.</p>
@@ -27,6 +24,7 @@
   .card {
     text-align: center;
   }
+
   p {
     margin: 1em;
   }

@@ -3,13 +3,13 @@
   import Login from "./lib/Login.svelte";
   import {getAuth} from "firebase/auth";
   import BurpList from "./lib/BurpList.svelte";
-  import Friends from "./lib/Friends.svelte";
+  import Users from "./lib/Users.svelte";
   import Share from "./lib/Share.svelte";
   import {fly} from 'svelte/transition';
 
   let loggedIn = false;
   let user;
-  let friends;
+  let users;
   let loadingUser = false;
 
   const audioOptions = ['audio/webm', 'audio/mp4'];
@@ -45,14 +45,14 @@
       <Login bind:user/>
     {/if}
 
-    {#if loggedIn}
-      <Friends bind:friends {user}/>
-      <BurpList {user} {friends} {supportedAudioMimeType}/>
+    {#if loggedIn && user}
+      <Users bind:users {user}/>
+      <BurpList {user} {users} {supportedAudioMimeType}/>
     {/if}
 
     {#if showShare}
       <div in:fly="{{ x: 200, duration: 700, delay: 5000 }}">
-        <Share />
+        <Share/>
       </div>
     {/if}
   {/if}

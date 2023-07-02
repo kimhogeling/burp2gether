@@ -1,6 +1,7 @@
 export class Burp {
   constructor(id, uid, date, filename, reactions) {
     this.id = id;
+    // user id
     this.uid = uid;
     this.date = date;
     this.filename = filename;
