@@ -126,7 +126,7 @@
     <!-- day by day-->
     {#each ([...burpsByDays.entries()] || []) as day }
       <!-- show day if in public view or if user follows any of the users that burped that day -->
-      {#if publicView || day[1].some(b => userDoc?.data().favourites.includes(b.uid)) }
+      {#if publicView || day[1].some(b => userDoc?.data().favourites?.includes(b.uid)) }
         <DayLine dateString={day[0]}/>
         {#each day[1] as burp (burp.id)}
           <!-- show burp if in public view or if user follows the user of this burp -->
