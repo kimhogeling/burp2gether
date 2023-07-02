@@ -7,6 +7,7 @@
   import BurpPlayer from "./BurpPlayer.svelte";
   import {slide} from 'svelte/transition';
   import Reactions from "./Reactions.svelte";
+  import {onDestroy} from "svelte";
 
   const createISOStringWithTimezoneOffset = (date) => new Date(
       date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0]
@@ -14,7 +15,7 @@
   let todayString = createISOStringWithTimezoneOffset(new Date());
 
   // this is just for midnight
-  window.setInterval(() => {
+  const intervalForDayChangeCheck = window.setInterval(() => {
     let updatedTodayString = createISOStringWithTimezoneOffset(new Date());
     if (todayString !== updatedTodayString) {
       todayString = updatedTodayString;
@@ -23,6 +24,8 @@
       newBlob = null;
     }
   }, 1000 * 60 * 2);
+
+  onDestroy(() => clearInterval(intervalForDayChangeCheck));
 
   let burpsByDays = null;
   let yourWinnerEachDay = new Map();
