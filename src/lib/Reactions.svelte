@@ -8,13 +8,13 @@
   export let yourWinnerEachDay;
 
   const REACTIONS = [
-    Reaction.of('OKAY', '🙂', 'Okay'),
-    Reaction.of('WOW', '🤩', 'Wow!'),
-    Reaction.of('WTF', '🤯', 'WTF!'),
-    Reaction.of('HAHA', '🤣', 'Haha'),
-    Reaction.of('EWW', '🤢', 'Ewww'),
-    Reaction.of('SAD', '😢', 'Sad..'),
-    Reaction.of('WIN', '🏆', 'Today\'s Winner!', true),
+    new Reaction('OKAY', '🙂', 'Okay'),
+    new Reaction('WOW', '🤩', 'Wow!'),
+    new Reaction('WTF', '🤯', 'WTF!'),
+    new Reaction('HAHA', '🤣', 'Haha'),
+    new Reaction('EWW', '🤢', 'Ewww'),
+    new Reaction('SAD', '😢', 'Sad..'),
+    new Reaction('WIN', '🏆', 'Today\'s Winner!', true),
   ];
 
   const winnerReaction = REACTIONS.find(r => r.key === 'WIN');
