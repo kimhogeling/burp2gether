@@ -95,6 +95,10 @@
   }
 
   const getNickname = uid => users.get(uid)?.nickname || '';
+
+  const burpContainsUserThatWasFavourited = burp => userDoc?.data().favourites?.includes(burp.uid);
+
+  const itsMyOwnBurp = burp => burp.uid === user.uid;
 </script>
 
 {#if !youHaveBurpedToday && !saving && !savedSuccessfully }
@@ -126,11 +130,11 @@
     <!-- day by day-->
     {#each ([...burpsByDays.entries()] || []) as day }
       <!-- show day if in public view or if user follows any of the users that burped that day -->
-      {#if publicView || day[1].some(b => userDoc?.data().favourites?.includes(b.uid)) }
+      {#if publicView || day[1].some(burpContainsUserThatWasFavourited) || day[1].some(itsMyOwnBurp) }
         <DayLine dateString={day[0]}/>
         {#each day[1] as burp (burp.id)}
           <!-- show burp if in public view or if user follows the user of this burp -->
-          {#if publicView || userDoc?.data().favourites?.includes(burp.uid) }
+          {#if publicView || burpContainsUserThatWasFavourited(burp) || itsMyOwnBurp(burp) }
             <div class="card play-burp">
               <BurpPlayer {burp} {supportedAudioMimeType}/>
               <p class="nickname">{getNickname(burp.uid)}
