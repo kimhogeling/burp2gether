@@ -153,11 +153,13 @@
   <div class="bottom-bar">
     {#if publicView}
       <button type="button" on:click={() => { publicView = false}}
-              title="Show my favourite burpers">🤩 Show Favourites
+              title="Show my favourite burpers">
+        ★ Show Favourites
       </button>
     {/if}
     {#if !publicView}
-      <button type="button" on:click={() => { publicView = true}} title="Show everyone">🌍 Show Everyone
+      <button type="button" on:click={() => { publicView = true}} title="Show everyone">
+        🌍 Show Everyone
       </button>
     {/if}
   </div>
