@@ -4,8 +4,6 @@
   import {getAuth} from "firebase/auth";
   import BurpList from "./lib/BurpList.svelte";
   import Users from "./lib/Users.svelte";
-  import Share from "./lib/Share.svelte";
-  import {fly} from 'svelte/transition';
 
   let loggedIn = false;
   let user;
@@ -22,11 +20,6 @@
       loggedIn = !!u;
     })
   }
-
-  let showShare = false;
-  setTimeout(() => {
-    showShare = true
-  }, 1)
 </script>
 
 <div class="content">
@@ -48,12 +41,6 @@
     {#if loggedIn && user}
       <Users bind:users {user}/>
       <BurpList {user} {users} {supportedAudioMimeType}/>
-    {/if}
-
-    {#if showShare}
-      <div in:fly="{{ x: 200, duration: 700, delay: 5000 }}">
-        <Share/>
-      </div>
     {/if}
   {/if}
 </div>

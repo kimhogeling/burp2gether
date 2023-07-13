@@ -9,6 +9,7 @@
   import Reactions from "./Reactions.svelte";
   import {onDestroy} from "svelte";
   import Favourite from "./Favourite.svelte";
+  import Share from "./Share.svelte";
 
   const createISOStringWithTimezoneOffset = (date) => new Date(
       date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0]
@@ -130,7 +131,8 @@
     <!-- day by day-->
     {#each ([...burpsByDays.entries()] || []) as day }
       <!-- show day if in public view or if user follows any of the users that burped that day -->
-      {#if publicView || day[1].some(burpContainsUserThatWasFavourited) || day[1].some(itsMyOwnBurp) }
+      {#if publicView || day[1].some(burpContainsUserThatWasFavourited) || day[1].some(
+          itsMyOwnBurp) }
         <DayLine dateString={day[0]}/>
         {#each day[1] as burp (burp.id)}
           <!-- show burp if in public view or if user follows the user of this burp -->
@@ -149,8 +151,8 @@
   {/if}
 </div>
 
-{#if youHaveBurpedToday}
-  <div class="bottom-bar">
+<div class="bottom-bar">
+  {#if youHaveBurpedToday}
     {#if publicView}
       <button type="button" on:click={() => { publicView = false}}
               title="Show my favourite burpers">
@@ -162,8 +164,9 @@
         🌍 Show Everyone
       </button>
     {/if}
-  </div>
-{/if}
+  {/if}
+  <Share/>
+</div>
 
 <style>
   .list {
