@@ -1,9 +1,9 @@
 <script>
-  import Logo from "./lib/Logo.svelte";
-  import Login from "./lib/Login.svelte";
+  import Logo from "../lib/Logo.svelte";
+  import Login from "../lib/Login.svelte";
   import {getAuth} from "firebase/auth";
-  import BurpList from "./lib/BurpList.svelte";
-  import Users from "./lib/Users.svelte";
+  import BurpList from "../lib/BurpList.svelte";
+  import Users from "../lib/Users.svelte";
 
   let loggedIn = false;
   let user;
@@ -38,7 +38,7 @@
       <Login bind:user/>
     {/if}
 
-    {#if loggedIn && user}
+    {#if loggedIn && user && !loadingUser }
       <Users bind:users {user}/>
       <BurpList {user} {users} {supportedAudioMimeType}/>
     {/if}

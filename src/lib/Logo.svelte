@@ -8,7 +8,7 @@
   }, 1)
 </script>
 {#if logoVisible}
-  <div class="logo" in:fly="{{ y: 300, duration: 2000 }}">
+  <div class="logo" in:fly="{{ y: -200, duration: 3000 }}">
     <span>burp</span>
     <span class="logo-colored-letter">2</span>
     <span>gether</span>

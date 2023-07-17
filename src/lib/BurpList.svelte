@@ -20,16 +20,14 @@
   const intervalForDayChangeCheck = window.setInterval(() => {
     let updatedTodayString = createISOStringWithTimezoneOffset(new Date());
     if (todayString !== updatedTodayString) {
-      todayString = updatedTodayString;
-      youHaveBurpedToday = false;
-      newBurpBlobString = null;
-      newBlob = null;
+      location.reload();
     }
   }, 1000 * 60 * 2);
 
   onDestroy(() => clearInterval(intervalForDayChangeCheck));
 
   let burpsByDays = new Map();
+  let loadedBurpsInitially = false;
   let yourWinnerEachDay = new Map();
   let newBurpBlobString;
   let newBlob;
@@ -37,15 +35,19 @@
   let youHaveBurpedToday = true;
   let publicView = false;
 
+  let dataIsFromCache = false;
+
   export let user
   export let users;
   export let supportedAudioMimeType;
   const supportedFileExtension = supportedAudioMimeType?.split('/')[1];
 
   let userDoc;
+  let loadedUserDocInitially = false;
   onSnapshot(query(collection(getFirestore(), 'friend'), where('uid', '==', user.uid)),
       querySnapshot => {
         userDoc = querySnapshot.docs[0];
+        loadedUserDocInitially = true;
       });
 
   const burpsRef = collection(getFirestore(), 'burp');
@@ -64,9 +66,13 @@
         yourWinnerEachDay.set(burp.date, burp.id);
       }
     });
+
+    dataIsFromCache = querySnapshot.metadata.fromCache;
+
+    loadedBurpsInitially = true;
   });
 
-  $: youHaveBurpedToday =
+  $:youHaveBurpedToday =
       savedSuccessfully ||
       (burpsByDays?.get(todayString) || []).some((burp) => burp.uid === user.uid);
 
@@ -102,71 +108,80 @@
   const itsMyOwnBurp = burp => burp.uid === user.uid;
 </script>
 
-{#if !youHaveBurpedToday && !saving && !savedSuccessfully }
-  <div class="card record-burp" transition:slide>
-    <BurpRecorder bind:newBurpBlobString bind:newBlob {save} {supportedAudioMimeType}/>
+
+{#if !loadedBurpsInitially || !loadedUserDocInitially}
+  <div class="card">
+    Loading Burps and Favourites
   </div>
 {/if}
 
-<div class="list">
-  {#if burpsByDays.entries().length === 0}
-    <div class="card">
-      Loading Burps..
+{#if loadedBurpsInitially }
+  {#if !dataIsFromCache && !youHaveBurpedToday && !saving && !savedSuccessfully }
+    <div class="card record-burp" transition:slide>
+      <BurpRecorder bind:newBurpBlobString bind:newBlob {save} {supportedAudioMimeType}/>
     </div>
   {/if}
 
-  {#if youHaveBurpedToday && burpsByDays.get(todayString) && users}
-    <!-- not in public view and user doesn't follow anyone, inform about public view -->
-    {#if !publicView && (userDoc?.data().favourites || []).length === 0 }
-      <div class="card info-no-favourites">
-        You have no favourites yet..<br>
-        <br>
-        Find people here:
-        <button type="button" on:click={() => { publicView = true}} title="Show everyone">🌍
-          Everyone
-        </button>
-      </div>
-    {/if}
+  {#if dataIsFromCache && !youHaveBurpedToday  }
+    <div class="card" transition:slide>
+      🚫 You seem to be offline, so you can't submit a new burp right now.
+    </div>
+  {/if}
 
-    <!-- day by day-->
-    {#each ([...burpsByDays.entries()] || []) as day }
-      <!-- show day if in public view or if user follows any of the users that burped that day -->
-      {#if publicView || day[1].some(burpContainsUserThatWasFavourited) || day[1].some(
-          itsMyOwnBurp) }
-        <DayLine dateString={day[0]}/>
-        {#each day[1] as burp (burp.id)}
-          <!-- show burp if in public view or if user follows the user of this burp -->
-          {#if publicView || burpContainsUserThatWasFavourited(burp) || itsMyOwnBurp(burp) }
-            <div class="card play-burp">
-              <BurpPlayer {burp} {supportedAudioMimeType}/>
-              <p class="nickname">{getNickname(burp.uid)}
-                <Favourite burpUser={users.get(burp.uid)} {user}/>
-              </p>
-              <Reactions {burp} {user} {yourWinnerEachDay}/>
-            </div>
-          {/if}
-        {/each}
+  <div class="list">
+    {#if youHaveBurpedToday && burpsByDays.get(todayString) && users}
+      <!-- not in public view and user doesn't follow anyone, inform about public view -->
+      {#if loadedUserDocInitially && !publicView && (userDoc?.data().favourites || []).length === 0 }
+        <div class="card info-no-favourites">
+          You have no favourites yet..<br>
+          <br>
+          Find people here:
+          <button type="button" on:click={() => { publicView = true}} title="Show everyone">🌍
+            Everyone
+          </button>
+        </div>
       {/if}
-    {/each}
-  {/if}
-</div>
 
-<div class="bottom-bar">
-  {#if youHaveBurpedToday}
-    {#if publicView}
-      <button type="button" on:click={() => { publicView = false}}
-              title="Show my favourite burpers">
-        ★ Show Favourites
-      </button>
+      <!-- day by day-->
+      {#each ([...burpsByDays.entries()] || []) as day }
+        <!-- show day if in public view or if user follows any of the users that burped that day -->
+        {#if publicView || day[1].some(burpContainsUserThatWasFavourited) || day[1].some(
+            itsMyOwnBurp) }
+          <DayLine dateString={day[0]}/>
+          {#each day[1] as burp (burp.id)}
+            <!-- show burp if in public view or if user follows the user of this burp -->
+            {#if publicView || burpContainsUserThatWasFavourited(burp) || itsMyOwnBurp(burp) }
+              <div class="card play-burp">
+                <BurpPlayer {burp} {supportedAudioMimeType}/>
+                <p class="nickname">{getNickname(burp.uid)}
+                  <Favourite burpUser={users.get(burp.uid)} {user}/>
+                </p>
+                <Reactions {burp} {user} {yourWinnerEachDay}/>
+              </div>
+            {/if}
+          {/each}
+        {/if}
+      {/each}
     {/if}
-    {#if !publicView}
-      <button type="button" on:click={() => { publicView = true}} title="Show everyone">
-        🌍 Show Everyone
-      </button>
+  </div>
+
+  <div class="bottom-bar">
+    {#if youHaveBurpedToday}
+      {#if publicView}
+        <button type="button" on:click={() => { publicView = false}}
+                title="Show my favourite burpers">
+          ★ Show Favourites
+        </button>
+      {/if}
+      {#if !publicView}
+        <button type="button" on:click={() => { publicView = true}} title="Show everyone">
+          🌍 Show Everyone
+        </button>
+      {/if}
     {/if}
-  {/if}
-  <Share/>
-</div>
+    <Share/>
+  </div>
+{/if}
 
 <style>
   .list {
