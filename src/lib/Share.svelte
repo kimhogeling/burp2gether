@@ -2,7 +2,7 @@
   let showQrCode = false;
 </script>
 
-<button type="button" on:click={() => { showQrCode = !showQrCode}} title="Share the app">
+<button on:click={() => { showQrCode = !showQrCode}} title="Share the app" type="button">
   🗣️
   {#if !showQrCode}
     Show share code

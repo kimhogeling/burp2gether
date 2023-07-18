@@ -1,14 +1,13 @@
 <script>
   import {fly} from 'svelte/transition';
+  import {onMount} from 'svelte';
 
   let logoVisible = false;
-
-  setTimeout(() => {
-    logoVisible = true
-  }, 1)
+  onMount(() => logoVisible = true);
 </script>
+
 {#if logoVisible}
-  <div class="logo" in:fly="{{ y: -200, duration: 3000 }}">
+  <div class="logo" in:fly="{{ y: -100, duration: 4000 }}">
     <span>burp</span>
     <span class="logo-colored-letter">2</span>
     <span>gether</span>

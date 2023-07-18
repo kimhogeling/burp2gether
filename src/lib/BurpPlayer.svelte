@@ -103,7 +103,7 @@
 
   .icon-button.playing {
     transform: scale(1.2) rotate(2deg);
-    box-shadow: 5px 5px 10px rgba(0,0,0,0.7 );
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.7);
   }
 
   .error {

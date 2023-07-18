@@ -1,10 +1,9 @@
-
 <script>
   import {doc, getFirestore, updateDoc} from "firebase/firestore";
   import {Reaction} from "../types/Reaction.js";
+  import {user} from './store-users.js'
 
   export let burp;
-  export let user;
   export let yourWinnerEachDay;
 
   const REACTIONS = [
@@ -19,7 +18,7 @@
 
   const winnerReaction = REACTIONS.find(r => r.key === 'WIN');
 
-  function addReaction (reaction) {
+  function addReaction(reaction) {
     const updatedReactions = burp.reactions || {}
     if (reaction.key === 'WIN') {
       let winnerAtChosenDay = yourWinnerEachDay.get(burp.date);
@@ -33,10 +32,11 @@
       updatedReactions[reaction.key] = [];
     }
 
-    if (!updatedReactions[reaction.key].includes(user.uid)) {
-      updatedReactions[reaction.key] = [user.uid, ...updatedReactions[reaction.key]];
+    if (!updatedReactions[reaction.key].includes($user.uid)) {
+      updatedReactions[reaction.key] = [$user.uid, ...updatedReactions[reaction.key]];
     } else {
-      updatedReactions[reaction.key] = updatedReactions[reaction.key].filter(uid => uid !== user.uid);
+      updatedReactions[reaction.key] = updatedReactions[reaction.key].filter(
+          uid => uid !== $user.uid);
     }
 
     updateDoc(doc(getFirestore(), 'burp', burp.id), {

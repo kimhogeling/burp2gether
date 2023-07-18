@@ -19,7 +19,8 @@
   let globalStream = null;
   let triggeringRecording = false;
   let triggeringStop = false;
-  let stopRecording = () => {};
+  let stopRecording = () => {
+  };
 
   function killStream(stream) {
     [...stream.getAudioTracks()].forEach(t => t.stop());
@@ -80,7 +81,8 @@
         newBlob = new Blob(audioChunks, {type: supportedAudioMimeType});
         newBurpBlobString = window.URL.createObjectURL(newBlob);
 
-        stopRecording = () => {};
+        stopRecording = () => {
+        };
       });
       rec.start();
     });

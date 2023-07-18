@@ -10,6 +10,7 @@
   import {onDestroy} from "svelte";
   import Favourite from "./Favourite.svelte";
   import Share from "./Share.svelte";
+  import {user, users} from './store-users.js'
 
   const createISOStringWithTimezoneOffset = (date) => new Date(
       date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0]
@@ -37,14 +38,12 @@
 
   let dataIsFromCache = false;
 
-  export let user
-  export let users;
   export let supportedAudioMimeType;
   const supportedFileExtension = supportedAudioMimeType?.split('/')[1];
 
   let userDoc;
   let loadedUserDocInitially = false;
-  onSnapshot(query(collection(getFirestore(), 'friend'), where('uid', '==', user.uid)),
+  onSnapshot(query(collection(getFirestore(), 'friend'), where('uid', '==', $user.uid)),
       querySnapshot => {
         userDoc = querySnapshot.docs[0];
         loadedUserDocInitially = true;
@@ -62,7 +61,7 @@
     querySnapshot.docs
     .forEach(b => {
       const burp = Burp.of(b.id, b.data());
-      if (burp.reactions?.WIN?.includes(user.uid)) {
+      if (burp.reactions?.WIN?.includes($user.uid)) {
         yourWinnerEachDay.set(burp.date, burp.id);
       }
     });
@@ -74,7 +73,7 @@
 
   $:youHaveBurpedToday =
       savedSuccessfully ||
-      (burpsByDays?.get(todayString) || []).some((burp) => burp.uid === user.uid);
+      (burpsByDays?.get(todayString) || []).some((burp) => burp.uid === $user.uid);
 
   const storage = getStorage();
 
@@ -82,7 +81,7 @@
   let savedSuccessfully = false;
 
   async function save() {
-    const filename = `burp/${todayString}_${user.uid}.${supportedFileExtension}`;
+    const filename = `burp/${todayString}_${$user.uid}.${supportedFileExtension}`;
     saving = true;
     return uploadBytes(ref(storage, filename), newBlob, {
       contentType: supportedAudioMimeType
@@ -101,11 +100,11 @@
     })
   }
 
-  const getNickname = uid => users.get(uid)?.nickname || '';
+  const getNickname = uid => $users.get(uid)?.nickname || '';
 
   const burpContainsUserThatWasFavourited = burp => userDoc?.data().favourites?.includes(burp.uid);
 
-  const itsMyOwnBurp = burp => burp.uid === user.uid;
+  const itsMyOwnBurp = burp => burp.uid === $user.uid;
 </script>
 
 
@@ -129,9 +128,10 @@
   {/if}
 
   <div class="list">
-    {#if youHaveBurpedToday && burpsByDays.get(todayString) && users}
+    {#if youHaveBurpedToday && burpsByDays.get(todayString) && $users}
       <!-- not in public view and user doesn't follow anyone, inform about public view -->
-      {#if loadedUserDocInitially && !publicView && (userDoc?.data().favourites || []).length === 0 }
+      {#if loadedUserDocInitially && !publicView && (userDoc?.data().favourites || []).length
+      === 0 }
         <div class="card info-no-favourites">
           You have no favourites yet..<br>
           <br>
@@ -154,9 +154,9 @@
               <div class="card play-burp">
                 <BurpPlayer {burp} {supportedAudioMimeType}/>
                 <p class="nickname">{getNickname(burp.uid)}
-                  <Favourite burpUser={users.get(burp.uid)} {user}/>
+                  <Favourite burpUser={$users.get(burp.uid)}/>
                 </p>
-                <Reactions {burp} {user} {yourWinnerEachDay}/>
+                <Reactions {burp} {yourWinnerEachDay}/>
               </div>
             {/if}
           {/each}
