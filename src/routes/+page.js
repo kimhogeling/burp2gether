@@ -11,5 +11,5 @@ import {firebaseConfig} from "./firebase-config.js";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 // const analytics = getAnalytics(firebaseApp);

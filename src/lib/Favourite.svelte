@@ -1,55 +1,23 @@
 <script>
-  import {collection, getFirestore, onSnapshot, query, updateDoc, where} from "firebase/firestore";
-  import {user} from './store-users.js'
+  import {authUser, updateFavourites, userDoc} from './store-users.js';
 
   export let burpUser;
-
-  let userDoc;
-  onSnapshot(query(collection(getFirestore(), 'friend'), where('uid', '==', $user.uid)),
-      querySnapshot => {
-        userDoc = querySnapshot.docs[0];
-      });
 
   let addMessageVisible = false;
   let removeMessageVisible = false;
 
-  function setFavourite() {
-    const updatedFavourites = new Set(userDoc.data().favourites || []);
-    updatedFavourites.add(burpUser.uid);
-    const favourites = [...updatedFavourites];
-    updateDoc(userDoc.ref, {favourites})
-    .then(() => {
-      addMessageVisible = false;
-    })
-    .catch(() => {
-      alert(
-          `Could not add user ${
-              burpUser.nickname}:${burpUser.uid} to favourites of user ${
-              userDoc.data().nickname}:${userDoc.data().uid}. Please tell Kim about this!`)
-    });
-  }
-
   function removeFavourite() {
-    const updatedFavourites = new Set(userDoc.data().favourites || []);
-    updatedFavourites.delete(burpUser.uid);
-    const favourites = [...updatedFavourites];
-    updateDoc(userDoc.ref, {favourites})
-    .then(() => {
-      removeMessageVisible = false;
-    })
-    .catch(() => {
-      alert(
-          `Could not remove user ${
-              burpUser.nickname}:${burpUser.uid} from favourites of user ${
-              userDoc.data().nickname}:${userDoc.data().uid}. Please tell Kim about this!`)
-    });
+    updateFavourites(false, burpUser).then(() => removeMessageVisible = false);
   }
 
-  let isStarred;
-  $: isStarred = (userDoc?.data().favourites || []).includes(burpUser?.uid)
+  function addFavourite() {
+    updateFavourites(true, burpUser).then(() => addMessageVisible = false);
+  }
+
+  $: isStarred = ($userDoc?.data().favourites || []).includes(burpUser?.uid);
 </script>
 
-{#if burpUser.uid !== $user.uid && userDoc?.data()}
+{#if burpUser.uid !== $authUser.uid}
   {#if isStarred}
     <span class="star on" on:click={() => {removeMessageVisible = true}}
           title="Remove from favourites">★</span>
@@ -75,7 +43,7 @@
         <div>
           <button type="button" class="cancel" on:click={() => {addMessageVisible = false}}>Cancel
           </button>
-          <button type="button" class="ok" on:click={() => {setFavourite()}}>Ok</button>
+          <button type="button" class="ok" on:click={() => {addFavourite()}}>Ok</button>
         </div>
       </div>
     {/if}

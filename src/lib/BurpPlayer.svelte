@@ -1,51 +1,32 @@
 <script>
-  import {getDownloadURL, getStorage, ref} from "firebase/storage";
+  import {getFileFromStorage, supportedAudioMimeType} from "$lib/store-burps.js";
+
   // icons: https://svelte-icons-explorer.vercel.app/
   import {TiNotes} from "svelte-icons/ti";
 
   // src for new recording, which is not yet in storage
-  export let newBurpBlobString;
+  // TODO make writable for newBurpBlobString
+  export let newBurpBlobString = null;
   export let playing = false;
-
-  export let supportedAudioMimeType;
-
   // burp entry from DB
   export let burp;
-  const storage = getStorage();
+
   let injectAudio = false;
   let burpStorageURL;
   let burpStorageFileType;
   let error = null;
 
-  $: {
-    error = null;
+  $: audioSource = newBurpBlobString || burpStorageURL;
+  $: audioType = burpStorageFileType || supportedAudioMimeType;
 
-    if (burp?.date && burp?.uid && burp?.filename) {
-      getDownloadURL(ref(storage, burp?.filename))
-      .then((url) => {
+  $: {
+    if (burp?.filename) {
+      getFileFromStorage(burp?.filename)
+      .then(({url, fileType}) => {
         burpStorageURL = url;
-        burpStorageFileType = `audio/${burp?.filename?.split('.')?.[1]}`;
-        error = null;
+        burpStorageFileType = fileType;
       })
-      .catch((err) => {
-        burpStorageURL = null;
-        // A full list of error codes is available at
-        // https://firebase.google.com/docs/storage/web/handle-errors
-        switch (err.code) {
-          case 'storage/object-not-found':
-            error = 'File doesn\'t exist';
-            break;
-          case 'storage/unauthorized':
-            error = 'User doesn\'t have permission to access the object';
-            break;
-          case 'storage/canceled':
-            error = 'User canceled the upload';
-            break;
-          case 'storage/unknown':
-            error = 'Unknown error occurred, inspect the server response';
-            break;
-        }
-      });
+      .catch(msg => error = msg);
     }
   }
 
@@ -84,13 +65,12 @@
   </div>
 {/if}
 
-{#if newBurpBlobString || burpStorageURL}
+{#if audioSource && audioType}
   <button on:click={play} class="icon-button {playing ? 'playing' : ''}">
     <TiNotes/>
     {#if injectAudio}
       <audio>
-        <source src={newBurpBlobString || burpStorageURL}
-                type="{burpStorageFileType || supportedAudioMimeType}"/>
+        <source src={audioSource} type="{audioType}"/>
       </audio>
     {/if}
   </button>

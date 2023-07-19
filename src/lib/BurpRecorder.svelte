@@ -5,14 +5,16 @@
 
   // icons: https://svelte-icons-explorer.vercel.app/
   import {TiMediaStop, TiMicrophone, TiTick} from "svelte-icons/ti";
+  import {saveBurp, supportedAudioMimeType} from "$lib/store-burps.js";
+  import {authUser} from "$lib/store-users.js";
 
-  export let newBlob;
-  export let newBurpBlobString;
-  export let save;
-  export let supportedAudioMimeType;
+  export let saving = false;
+  export let savedSuccessfully = false;
 
   // Blob[]
   let audioChunks = [];
+  let newBlob = null;
+  let newBurpBlobString = null;
   let recording = false;
   let recorderWorks = false;
   let didInit = false;
@@ -31,39 +33,54 @@
         stream => ({stream, rec: new MediaRecorder(stream, {mimeType: supportedAudioMimeType,})}))
   }
 
-  // trigger Microphone Permission
-  onMount(() => {
-    initRecorder().then(({stream}) => {
-      killStream(stream);
-      recorderWorks = true;
+  function onsave() {
+    saving = true;
+    return saveBurp($authUser, newBlob)
+    .then(() => {
+      savedSuccessfully = true;
+      newBurpBlobString = null;
     })
-    .catch(e => {
-      console.error('could not init recorder', e);
-      recorderWorks = false;
-      navigator.permissions.query({
-        name: 'microphone'
-      })
-      .then(permissionStatus => {
-        if (permissionStatus.state === 'denied') {
-          alert("You can't record burps, because you've denied microphone access.");
-        }
-      })
-      .catch(() => {
-        alert('Somehow cannot record. Please tell Kim')
-      })
+    .catch(() => {
+      savedSuccessfully = false;
     })
     .finally(() => {
-      didInit = true;
+      saving = false;
+      newBurpBlobString = null;
+      killStream(globalStream)
     })
+  }
+
+  // trigger Microphone Permission
+  onMount(async () => {
+    try {
+      killStream((await initRecorder()).stream);
+      recorderWorks = true;
+    } catch (e) {
+      console.error('could not init recorder', e);
+      recorderWorks = false;
+      try {
+        const permissionStatus = await navigator.permissions.query({name: 'microphone'});
+        if (permissionStatus.state === 'denied') {
+          alert("You can't record burps, because you've denied microphone access.");
+        } else {
+          alert(
+              `Somehow cannot record. (permissionStatus.state:${permissionStatus.state}) Please tell Kim`);
+        }
+      } catch {
+        alert('Somehow cannot record. Please tell Kim')
+      }
+    }
+    didInit = true;
   });
 
-  function startRecording() {
+  async function startRecording() {
     triggeringRecording = true;
     audioChunks = [];
-    newBlob = null
-    newBurpBlobString = ''
+    newBlob = null;
+    newBurpBlobString = '';
 
-    initRecorder().then(({stream, rec}) => {
+    try {
+      const {stream, rec} = await initRecorder();
       rec.addEventListener('start', () => {
         triggeringRecording = false;
         recording = true;
@@ -71,7 +88,7 @@
         stopRecording = () => {
           triggeringStop = true;
           rec.stop();
-        }
+        };
       });
       rec.addEventListener('dataavailable', blobEvent => audioChunks.push(blobEvent.data));
       rec.addEventListener('stop', () => {
@@ -85,11 +102,12 @@
         };
       });
       rec.start();
-    });
-  }
-
-  function onsave() {
-    save().finally(() => killStream(globalStream))
+    } catch (e) {
+      console.error('Could not start recording', e);
+      if (confirm('Could not start recording. Maybe reloading the app would help. Reload?')) {
+        location.reload();
+      }
+    }
   }
 </script>
 

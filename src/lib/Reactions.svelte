@@ -1,11 +1,11 @@
 <script>
-  import {doc, getFirestore, updateDoc} from "firebase/firestore";
   import {Reaction} from "../types/Reaction.js";
-  import {user} from './store-users.js'
+  import {authUser} from './store-users.js'
+  import {addReactionToFirebase, yourWinnerEachDay} from "$lib/store-burps.js";
 
   export let burp;
-  export let yourWinnerEachDay;
 
+  let winnerReaction = new Reaction('WIN', '🏆', 'Today\'s Winner!', true);
   const REACTIONS = [
     new Reaction('OKAY', '🙂', 'Okay'),
     new Reaction('WOW', '🤩', 'Wow!'),
@@ -13,37 +13,18 @@
     new Reaction('HAHA', '🤣', 'Haha'),
     new Reaction('EWW', '🤢', 'Ewww'),
     new Reaction('SAD', '😢', 'Sad..'),
-    new Reaction('WIN', '🏆', 'Today\'s Winner!', true),
+    winnerReaction,
   ];
 
-  const winnerReaction = REACTIONS.find(r => r.key === 'WIN');
-
   function addReaction(reaction) {
-    const updatedReactions = burp.reactions || {}
-    if (reaction.key === 'WIN') {
-      let winnerAtChosenDay = yourWinnerEachDay.get(burp.date);
+    if (reaction.key === winnerReaction.key) {
+      let winnerAtChosenDay = $yourWinnerEachDay.get(burp.date);
       if (winnerAtChosenDay && winnerAtChosenDay !== burp.id) {
         alert(`Your already chose a winner for ${burp.date}`);
         return;
       }
     }
-
-    if (!updatedReactions[reaction.key]) {
-      updatedReactions[reaction.key] = [];
-    }
-
-    if (!updatedReactions[reaction.key].includes($user.uid)) {
-      updatedReactions[reaction.key] = [$user.uid, ...updatedReactions[reaction.key]];
-    } else {
-      updatedReactions[reaction.key] = updatedReactions[reaction.key].filter(
-          uid => uid !== $user.uid);
-    }
-
-    updateDoc(doc(getFirestore(), 'burp', burp.id), {
-      reactions: updatedReactions
-    });
-
-    burp.reactions = updatedReactions
+    burp.reactions = addReactionToFirebase(reaction, burp, $authUser);
   }
 </script>
 

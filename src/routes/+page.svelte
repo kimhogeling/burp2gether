@@ -1,29 +1,48 @@
 <script>
   import Logo from "../lib/Logo.svelte";
-  import Login from "../lib/Login.svelte";
-  import BurpList from "../lib/BurpList.svelte";
-  import {user, users} from '../lib/store-users.js';
+  import {connectionStatus, STATUS} from "$lib/store-online.js";
+  import {audioOptions, supportedAudioMimeType} from "$lib/store-burps.js";
+  import {authUser, users} from "$lib/store-users.js";
+  import Login from "$lib/Login.svelte";
+  import BurpList from "$lib/BurpList.svelte";
 
-  // Check if the browser supports any of the needed audio formats
-  const audioOptions = ["audio/webm", "audio/mp4"];
-  const supportedAudioMimeType = audioOptions.find(MediaRecorder.isTypeSupported) || null;
+  $: {
+    if ($connectionStatus === STATUS.RECONNECTED) {
+      location.reload();
+    }
+  }
 </script>
 
 <div class="content">
   <Logo/>
 
+  {#if $connectionStatus !== STATUS.ONLINE}
+    <div class="card">
+      {
+          $connectionStatus === STATUS.OFFLINE
+              ? '🚫 You seem to be offline'
+              : $connectionStatus === STATUS.DISCONNECTED
+                  ? '☠️ You seem to have lost internet connection'
+                  : $connectionStatus === STATUS.RECONNECTED
+                      ? '🥳 Connection is back! Refreshing the page...'
+                      : ''
+      }
+    </div>
+  {/if}
+
   {#if !supportedAudioMimeType}
     <div class="card">
-      This Browser does not support {audioOptions.join(", ")} 😭
+      🚫 This Browser does not support {audioOptions.join(", ")}
     </div>
-  {:else}
-    <!-- null means a user is identified as not logged in -->
-    {#if $user === null}
+  {/if}
+
+  {#if $connectionStatus === STATUS.ONLINE && supportedAudioMimeType}
+    <!-- null means a user is identified as not logged in-->
+    {#if $authUser === null}
       <Login/>
     {:else if ($users) }
-      <BurpList {supportedAudioMimeType}/>
+      <BurpList/>
     {/if}
-
   {/if}
 </div>
 

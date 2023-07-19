@@ -5,19 +5,22 @@ import {
   getFirestore,
   onSnapshot,
   orderBy,
-  query
+  query,
+  updateDoc,
+  where
 } from 'firebase/firestore';
 import {User} from "../types/User.js";
 import {readable} from "svelte/store";
 
-let localUser;
+let localAuthUser;
 let localUsers;
+let localUserDoc;
 
 // detect login and save user into this field
-export const user = readable(undefined, (set) => {
+export const authUser = readable(undefined, (set) => {
   getAuth().onAuthStateChanged(userOnStateChange => {
-    localUser = userOnStateChange;
-    set(localUser);
+    localAuthUser = userOnStateChange;
+    set(localAuthUser);
   }, (error) => {
     console.error(error);
     if (confirm('Could not load login. Maybe reload to try again?')) {
@@ -26,23 +29,23 @@ export const user = readable(undefined, (set) => {
   });
 });
 
-export const users = readable(undefined, (set) => {
+export const users = readable(null, (set) => {
   // in Firebase the users collection is called Friend
   const usersRef = collection(getFirestore(), 'friend');
 
-  onSnapshot(query(usersRef, orderBy("nickname", "asc")), (querySnapshot) => {
+  onSnapshot(query(usersRef, orderBy("nickname", "asc")), ({docs}) => {
     localUsers = new Map(
-        querySnapshot.docs
+        docs
         .map((friend) => User.of(friend.data()))
-        .map(f => [f.uid, f])
-    );
+        .map(u => [u.uid, u]));
     set(localUsers);
 
     // if the user is new, save it
-    if (localUsers.size > 0 && localUser && !localUsers.get(localUser.uid)) {
+    if (localUsers.size > 0 && localAuthUser && !localUsers.get(
+        localAuthUser.uid)) {
       addDoc(usersRef, {
-        uid: localUser.uid,
-        nickname: localUser.displayName.split(' ')[0]
+        uid: localAuthUser.uid,
+        nickname: localAuthUser.displayName.split(' ')[0]
       })
       .catch(e => {
         console.error(e);
@@ -51,3 +54,32 @@ export const users = readable(undefined, (set) => {
     }
   });
 });
+
+export const userDoc = readable(null, (set) => {
+  onSnapshot(query(collection(getFirestore(), 'friend'),
+          where('uid', '==', localAuthUser.uid)),
+      ({docs}) => {
+        localUserDoc = docs[0];
+        set(localUserDoc)
+      });
+});
+
+export function updateFavourites(add, burpUser) {
+  const updatedFavourites = new Set(localUserDoc.data().favourites || []);
+  if (add) {
+    updatedFavourites.add(burpUser.uid);
+  } else {
+    updatedFavourites.delete(burpUser.uid);
+  }
+
+  return updateDoc(localUserDoc.ref, {favourites: [...updatedFavourites]})
+  .catch(() => {
+    alert(
+        `Could not ${
+            add ? 'add' : 'remove'
+        } user ${burpUser.nickname}:${burpUser.uid} ${
+            add ? 'to' : 'from'
+        } favourites of user ${localUserDoc.data().nickname}:${localUserDoc.data().uid
+        }. Please tell Kim about this!`);
+  });
+}

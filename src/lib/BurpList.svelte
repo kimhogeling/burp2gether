@@ -1,136 +1,58 @@
 <script>
   import BurpRecorder from './BurpRecorder.svelte';
-  import {collection, getFirestore, onSnapshot, orderBy, query, where} from 'firebase/firestore';
-  import {getStorage, ref, uploadBytes} from 'firebase/storage';
-  import {Burp} from "../types/Burp.js";
   import DayLine from "./DayLine.svelte";
   import BurpPlayer from "./BurpPlayer.svelte";
   import {slide} from 'svelte/transition';
   import Reactions from "./Reactions.svelte";
-  import {onDestroy} from "svelte";
   import Favourite from "./Favourite.svelte";
   import Share from "./Share.svelte";
-  import {user, users} from './store-users.js'
+  import {authUser, userDoc, users} from './store-users.js'
+  import {burps, todayString} from './store-burps'
 
-  const createISOStringWithTimezoneOffset = (date) => new Date(
-      date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0]
+  let burpsByDays;
 
-  let todayString = createISOStringWithTimezoneOffset(new Date());
-
-  // this is just for midnight
-  const intervalForDayChangeCheck = window.setInterval(() => {
-    let updatedTodayString = createISOStringWithTimezoneOffset(new Date());
-    if (todayString !== updatedTodayString) {
-      location.reload();
-    }
-  }, 1000 * 60 * 2);
-
-  onDestroy(() => clearInterval(intervalForDayChangeCheck));
-
-  let burpsByDays = new Map();
-  let loadedBurpsInitially = false;
-  let yourWinnerEachDay = new Map();
-  let newBurpBlobString;
-  let newBlob;
-
-  let youHaveBurpedToday = true;
   let publicView = false;
 
-  let dataIsFromCache = false;
+  $: loadedUserDocInitially = !!$userDoc;
 
-  export let supportedAudioMimeType;
-  const supportedFileExtension = supportedAudioMimeType?.split('/')[1];
-
-  let userDoc;
-  let loadedUserDocInitially = false;
-  onSnapshot(query(collection(getFirestore(), 'friend'), where('uid', '==', $user.uid)),
-      querySnapshot => {
-        userDoc = querySnapshot.docs[0];
-        loadedUserDocInitially = true;
-      });
-
-  const burpsRef = collection(getFirestore(), 'burp');
-  onSnapshot(query(burpsRef, orderBy("date", "desc")), (querySnapshot) => {
-    burpsByDays = new Map();
-    burpsByDays.set(todayString, []);
-    querySnapshot.docs
-    .map(b => Burp.of(b.id, b.data()))
-    .forEach(b => burpsByDays.set(b.date, [...(burpsByDays.get(b.date) || []), b]))
-
-    yourWinnerEachDay = new Map();
-    querySnapshot.docs
-    .forEach(b => {
-      const burp = Burp.of(b.id, b.data());
-      if (burp.reactions?.WIN?.includes($user.uid)) {
-        yourWinnerEachDay.set(burp.date, burp.id);
-      }
-    });
-
-    dataIsFromCache = querySnapshot.metadata.fromCache;
-
-    loadedBurpsInitially = true;
-  });
+  $: burpsByDays = $burps?.reduce(
+          (m, b) => m.set(b.date, [...(m.get(b.date) || []), b]),
+          new Map([[todayString, []]]))
+      || null;
 
   $:youHaveBurpedToday =
+      saving ||
       savedSuccessfully ||
-      (burpsByDays?.get(todayString) || []).some((burp) => burp.uid === $user.uid);
+      (burpsByDays?.get(todayString) || []).some((burp) => burp.uid === $authUser.uid);
 
-  const storage = getStorage();
-
-  let saving = false;
-  let savedSuccessfully = false;
-
-  async function save() {
-    const filename = `burp/${todayString}_${$user.uid}.${supportedFileExtension}`;
-    saving = true;
-    return uploadBytes(ref(storage, filename), newBlob, {
-      contentType: supportedAudioMimeType
-    })
-    .then(() => {
-      savedSuccessfully = true;
-      newBurpBlobString = null;
-    })
-    .catch(e => {
-      console.error('Something went wrong, couldn\'t save!', e);
-      window.alert(
-          'Could not add the burp. Maybe a bad internet connection? Otherwise reloading the app might help.')
-    })
-    .finally(() => {
-      saving = false;
-    })
-  }
+  let saving;
+  let savedSuccessfully;
 
   const getNickname = uid => $users.get(uid)?.nickname || '';
 
-  const burpContainsUserThatWasFavourited = burp => userDoc?.data().favourites?.includes(burp.uid);
+  const burpContainsUserThatWasFavourited = burp => $userDoc?.data().favourites?.includes(burp.uid);
 
-  const itsMyOwnBurp = burp => burp.uid === $user.uid;
+  const itsMyOwnBurp = burp => burp.uid === $authUser.uid;
 </script>
 
 
-{#if !loadedBurpsInitially || !loadedUserDocInitially}
+{#if !burpsByDays || !$authUser || !$users}
   <div class="card">
     Loading Burps and Favourites
   </div>
 {/if}
 
-{#if loadedBurpsInitially }
-  {#if !dataIsFromCache && !youHaveBurpedToday && !saving && !savedSuccessfully }
-    <div class="card record-burp" transition:slide>
-      <BurpRecorder bind:newBurpBlobString bind:newBlob {save} {supportedAudioMimeType}/>
-    </div>
-  {/if}
+{#if !youHaveBurpedToday }
+  <div class="card record-burp" transition:slide>
+    <BurpRecorder bind:saving bind:savedSuccessfully />
+  </div>
+{/if}
 
-  {#if dataIsFromCache && !youHaveBurpedToday  }
-    <div class="card" transition:slide>
-      🚫 You seem to be offline, so you can't submit a new burp right now.
-    </div>
-  {/if}
-
+{#if burpsByDays && $authUser && $users}
   <div class="list">
     {#if youHaveBurpedToday && burpsByDays.get(todayString) && $users}
       <!-- not in public view and user doesn't follow anyone, inform about public view -->
-      {#if loadedUserDocInitially && !publicView && (userDoc?.data().favourites || []).length
+      {#if loadedUserDocInitially && !publicView && ($userDoc?.data().favourites || []).length
       === 0 }
         <div class="card info-no-favourites">
           You have no favourites yet..<br>
@@ -152,11 +74,11 @@
             <!-- show burp if in public view or if user follows the user of this burp -->
             {#if publicView || burpContainsUserThatWasFavourited(burp) || itsMyOwnBurp(burp) }
               <div class="card play-burp">
-                <BurpPlayer {burp} {supportedAudioMimeType}/>
+                <BurpPlayer {burp}/>
                 <p class="nickname">{getNickname(burp.uid)}
                   <Favourite burpUser={$users.get(burp.uid)}/>
                 </p>
-                <Reactions {burp} {yourWinnerEachDay}/>
+                <Reactions {burp}/>
               </div>
             {/if}
           {/each}
@@ -164,24 +86,24 @@
       {/each}
     {/if}
   </div>
-
-  <div class="bottom-bar">
-    {#if youHaveBurpedToday}
-      {#if publicView}
-        <button type="button" on:click={() => { publicView = false}}
-                title="Show my favourite burpers">
-          ★ Show Favourites
-        </button>
-      {/if}
-      {#if !publicView}
-        <button type="button" on:click={() => { publicView = true}} title="Show everyone">
-          🌍 Show Everyone
-        </button>
-      {/if}
-    {/if}
-    <Share/>
-  </div>
 {/if}
+
+<div class="bottom-bar">
+  {#if youHaveBurpedToday}
+    {#if publicView}
+      <button type="button" on:click={() => { publicView = false}}
+              title="Show my favourite burpers">
+        ★ Show Favourites
+      </button>
+    {:else}
+      <button type="button" on:click={() => { publicView = true}} title="Show everyone">
+        🌍 Show Everyone
+      </button>
+    {/if}
+  {/if}
+
+  <Share/>
+</div>
 
 <style>
   .list {
