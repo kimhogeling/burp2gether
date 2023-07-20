@@ -1,12 +1,12 @@
 <script>
-  import BurpPlayer from "./BurpPlayer.svelte";
-  import {slide} from 'svelte/transition';
-  import {onMount} from 'svelte';
-
+  import { onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
   // icons: https://svelte-icons-explorer.vercel.app/
-  import {TiMediaStop, TiMicrophone, TiTick} from "svelte-icons/ti";
-  import {newBurpBlobString, saveBurp, supportedAudioMimeType} from "$lib/store-burps.js";
-  import {authUser} from "$lib/store-users.js";
+  import { TiMediaStop, TiMicrophone, TiTick } from 'svelte-icons/ti';
+
+  import BurpPlayer from '$lib/BurpPlayer.svelte';
+  import { newBurpBlobString, saveBurp, supportedAudioMimeType } from '$lib/store-burps.js';
+  import { authUser } from '$lib/store-users.js';
 
   export let saving = false;
   export let savedSuccessfully = false;
@@ -28,8 +28,8 @@
   }
 
   function initRecorder() {
-    return navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(
-        stream => ({stream, rec: new MediaRecorder(stream, {mimeType: supportedAudioMimeType,})}))
+    return navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(
+      stream => ({ stream, rec: new MediaRecorder(stream, { mimeType: supportedAudioMimeType }) }));
   }
 
   function onsave() {
@@ -44,8 +44,8 @@
     .finally(() => {
       saving = false;
       newBurpBlobString.set(null);
-      killStream(globalStream)
-    })
+      killStream(globalStream);
+    });
   }
 
   // trigger Microphone Permission
@@ -57,15 +57,15 @@
       console.error('could not init recorder', e);
       recorderWorks = false;
       try {
-        const permissionStatus = await navigator.permissions.query({name: 'microphone'});
+        const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
         if (permissionStatus.state === 'denied') {
-          alert("You can't record burps, because you've denied microphone access.");
+          alert('You can\'t record burps, because you\'ve denied microphone access.');
         } else {
           alert(
-              `Somehow cannot record. (permissionStatus.state:${permissionStatus.state}) Please tell Kim`);
+            `Somehow cannot record. (permissionStatus.state:${permissionStatus.state}) Please tell Kim`);
         }
       } catch {
-        alert('Somehow cannot record. Please tell Kim')
+        alert('Somehow cannot record. Please tell Kim');
       }
     }
     didInit = true;
@@ -78,7 +78,7 @@
     newBurpBlobString.set(null);
 
     try {
-      const {stream, rec} = await initRecorder();
+      const { stream, rec } = await initRecorder();
       rec.addEventListener('start', () => {
         triggeringRecording = false;
         recording = true;
@@ -93,7 +93,7 @@
         triggeringStop = false;
         recording = false;
 
-        newBlob = new Blob(audioChunks, {type: supportedAudioMimeType});
+        newBlob = new Blob(audioChunks, { type: supportedAudioMimeType });
         newBurpBlobString.set(window.URL.createObjectURL(newBlob));
 
         stopRecording = () => {
@@ -109,7 +109,7 @@
   }
 </script>
 
-<div class="wrapper" transition:slide>
+<div class='wrapper' transition:slide>
 
   {#if !didInit}
     <p>Asking for Microphone permission..</p>
@@ -119,26 +119,26 @@
     <p>Let's record today's burp!</p>
     <div>
       {#if recording}
-        <button type="button" on:click={stopRecording} class="icon-button"
+        <button type='button' on:click={stopRecording} class='icon-button'
                 disabled={triggeringStop}>
-          <TiMediaStop/>
+          <TiMediaStop />
         </button>
       {/if}
       {#if !recording}
-        <button type="button" on:click={startRecording} class="icon-button red"
+        <button type='button' on:click={startRecording} class='icon-button red'
                 disabled={triggeringRecording}>
-          <TiMicrophone/>
+          <TiMicrophone />
         </button>
       {/if}
     </div>
 
     {#if $newBurpBlobString}
       <div transition:slide>
-        <p class="mt">Check your new Burp:</p>
-        <BurpPlayer {$newBurpBlobString}/>
-        <p class="mt">Save it?</p>
-        <button on:click={onsave} class="icon-button green">
-          <TiTick/>
+        <p class='mt'>Check your new Burp:</p>
+        <BurpPlayer {$newBurpBlobString} />
+        <p class='mt'>Save it?</p>
+        <button on:click={onsave} class='icon-button green'>
+          <TiTick />
         </button>
       </div>
     {/if}
@@ -146,7 +146,7 @@
 
   {#if didInit && !recorderWorks}
     <p>Sorry.. 😭 Recorder doesn't work in this browser</p>
-    <p class="mt">Maybe Chrome or Firefox work better on your device?</p>
+    <p class='mt'>Maybe Chrome or Firefox work better on your device?</p>
   {/if}
 
 </div>

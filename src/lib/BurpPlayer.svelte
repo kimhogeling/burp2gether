@@ -1,8 +1,12 @@
 <script>
-  import {getFileFromStorage, newBurpBlobString, supportedAudioMimeType} from "$lib/store-burps.js";
-
   // icons: https://svelte-icons-explorer.vercel.app/
-  import {TiNotes} from "svelte-icons/ti";
+  import { TiNotes } from 'svelte-icons/ti';
+
+  import {
+    getFileFromStorage,
+    newBurpBlobString,
+    supportedAudioMimeType
+  } from '$lib/store-burps.js';
 
   // src for new recording, which is not yet in storage
   export let playing = false;
@@ -20,7 +24,7 @@
   $: {
     if (burp?.filename) {
       getFileFromStorage(burp?.filename)
-      .then(({url, fileType}) => {
+      .then(({ url, fileType }) => {
         burpStorageURL = url;
         burpStorageFileType = fileType;
       })
@@ -56,7 +60,7 @@
 </script>
 
 {#if error}
-  <div class="error">
+  <div class='error'>
     <p>Can't burp 😭</p>
     <code>Error is: <span>"{error}"</span></code>
     <p>Please tell Kim!</p>
@@ -65,10 +69,10 @@
 
 {#if audioSource && audioType}
   <button on:click={play} class="icon-button {playing ? 'playing' : ''}">
-    <TiNotes/>
+    <TiNotes />
     {#if injectAudio}
       <audio>
-        <source src={audioSource} type="{audioType}"/>
+        <source src={audioSource} type='{audioType}' />
       </audio>
     {/if}
   </button>

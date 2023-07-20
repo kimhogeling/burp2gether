@@ -1,15 +1,15 @@
 <script>
-  import {fly} from 'svelte/transition';
-  import {onMount} from 'svelte';
+  import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
 
   let logoVisible = false;
   onMount(() => logoVisible = true);
 </script>
 
 {#if logoVisible}
-  <div class="logo" in:fly="{{ y: -100, duration: 4000 }}">
+  <div class='logo' in:fly='{{ y: -100, duration: 4000 }}'>
     <span>burp</span>
-    <span class="logo-colored-letter">2</span>
+    <span class='logo-colored-letter'>2</span>
     <span>gether</span>
   </div>
 {/if}

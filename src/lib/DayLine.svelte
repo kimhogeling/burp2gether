@@ -1,10 +1,10 @@
 <script>
-  export let dateString
+  export let dateString;
 </script>
 
-<div class="wrapper">
-  <div class="line"></div>
-  <div class="text">{dateString}</div>
+<div class='wrapper'>
+  <div class='line'></div>
+  <div class='text'>{dateString}</div>
 </div>
 
 <style>

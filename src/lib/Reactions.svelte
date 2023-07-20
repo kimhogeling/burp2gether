@@ -1,7 +1,7 @@
 <script>
-  import {Reaction} from "../types/Reaction.js";
-  import {authUser} from './store-users.js'
-  import {addReactionToFirebase, yourWinnerEachDay} from "$lib/store-burps.js";
+  import { authUser } from '$lib/store-users.js';
+  import { addReactionToFirebase, yourWinnerEachDay } from '$lib/store-burps.js';
+  import { Reaction } from '../types/Reaction.js';
 
   export let burp;
 
@@ -13,7 +13,7 @@
     new Reaction('HAHA', '🤣', 'Haha'),
     new Reaction('EWW', '🤢', 'Ewww'),
     new Reaction('SAD', '😢', 'Sad..'),
-    winnerReaction,
+    winnerReaction
   ];
 
   function addReaction(reaction) {
@@ -28,31 +28,31 @@
   }
 </script>
 
-<div class="wrapper">
-  <div class="smileys">
+<div class='wrapper'>
+  <div class='smileys'>
     {#each REACTIONS as reaction}
       {#if !reaction.hide}
-      <span class="smiley"
+      <span class='smiley'
             on:click={() => addReaction(reaction)}
             on:keydown={() => addReaction(reaction)}
-            role="button"
-            tabindex="0"
+            role='button'
+            tabindex='0'
             title={reaction.description}>
         {reaction.smiley}
-        <span class="counter">{(burp.reactions || {})[reaction.key]?.length || ''}</span>
+        <span class='counter'>{(burp.reactions || {})[reaction.key]?.length || ''}</span>
       </span>
       {/if}
     {/each}
   </div>
-  <div class="big-smiley">
-    <span class="smiley big"
+  <div class='big-smiley'>
+    <span class='smiley big'
           on:click={() => addReaction(winnerReaction)}
           on:keydown={() => addReaction(winnerReaction)}
-          role="button"
-          tabindex="0"
+          role='button'
+          tabindex='0'
           title={winnerReaction.description}>
     {winnerReaction.smiley}
-      <span class="counter">{(burp.reactions || {})[winnerReaction.key]?.length || ''}</span>
+      <span class='counter'>{(burp.reactions || {})[winnerReaction.key]?.length || ''}</span>
   </span>
   </div>
 </div>
