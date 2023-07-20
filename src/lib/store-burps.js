@@ -9,7 +9,7 @@ import {
   query,
   updateDoc
 } from "firebase/firestore";
-import {readable, writable} from "svelte/store";
+import {derived, readable, writable} from "svelte/store";
 import {Burp} from "../types/Burp.js";
 import {authUser} from "$lib/store-users.js";
 
@@ -31,23 +31,22 @@ window.setInterval(() => {
 }, 1000 * 60 * 2);
 
 export const burps = readable(null, (set) => {
-  onSnapshot(query(collection(getFirestore(), 'burp'), orderBy("date", "desc"),
+  onSnapshot(query(
+      collection(getFirestore(), 'burp'),
+      orderBy("date", "desc"),
       limit(100)), ({docs}) => {
     set(docs.map(b => Burp.of(b.id, b.data())));
   });
 });
 
-export const yourWinnerEachDay = readable(null, (set) => {
-  burps.subscribe(bs => {
-    authUser.subscribe(u => {
-      if (bs) {
-        set(bs
-        .filter(({reactions}) => reactions?.WIN?.includes(u.uid))
-        .reduce((m, b) => m.set(b.date, b.id), new Map()));
-      }
-    });
-  })
-})
+export const yourWinnerEachDay = derived([burps, authUser], ($values, set) => {
+  const [$burps, $authUser] = $values;
+  if ($burps && $authUser) {
+    set($burps
+    .filter(({reactions}) => reactions?.WIN?.includes($authUser.uid))
+    .reduce((m, b) => m.set(b.date, b.id), new Map()));
+  }
+});
 
 export async function getFileFromStorage(filename) {
   try {
