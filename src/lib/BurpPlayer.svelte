@@ -1,12 +1,10 @@
 <script>
-  import {getFileFromStorage, supportedAudioMimeType} from "$lib/store-burps.js";
+  import {getFileFromStorage, newBurpBlobString, supportedAudioMimeType} from "$lib/store-burps.js";
 
   // icons: https://svelte-icons-explorer.vercel.app/
   import {TiNotes} from "svelte-icons/ti";
 
   // src for new recording, which is not yet in storage
-  // TODO make writable for newBurpBlobString
-  export let newBurpBlobString = null;
   export let playing = false;
   // burp entry from DB
   export let burp;
@@ -16,7 +14,7 @@
   let burpStorageFileType;
   let error = null;
 
-  $: audioSource = newBurpBlobString || burpStorageURL;
+  $: audioSource = $newBurpBlobString || burpStorageURL;
   $: audioType = burpStorageFileType || supportedAudioMimeType;
 
   $: {

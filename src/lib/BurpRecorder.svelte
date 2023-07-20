@@ -5,7 +5,7 @@
 
   // icons: https://svelte-icons-explorer.vercel.app/
   import {TiMediaStop, TiMicrophone, TiTick} from "svelte-icons/ti";
-  import {saveBurp, supportedAudioMimeType} from "$lib/store-burps.js";
+  import {newBurpBlobString, saveBurp, supportedAudioMimeType} from "$lib/store-burps.js";
   import {authUser} from "$lib/store-users.js";
 
   export let saving = false;
@@ -14,7 +14,6 @@
   // Blob[]
   let audioChunks = [];
   let newBlob = null;
-  let newBurpBlobString = null;
   let recording = false;
   let recorderWorks = false;
   let didInit = false;
@@ -38,14 +37,13 @@
     return saveBurp($authUser, newBlob)
     .then(() => {
       savedSuccessfully = true;
-      newBurpBlobString = null;
     })
     .catch(() => {
       savedSuccessfully = false;
     })
     .finally(() => {
       saving = false;
-      newBurpBlobString = null;
+      newBurpBlobString.set(null);
       killStream(globalStream)
     })
   }
@@ -77,7 +75,7 @@
     triggeringRecording = true;
     audioChunks = [];
     newBlob = null;
-    newBurpBlobString = '';
+    newBurpBlobString.set(null);
 
     try {
       const {stream, rec} = await initRecorder();
@@ -96,7 +94,7 @@
         recording = false;
 
         newBlob = new Blob(audioChunks, {type: supportedAudioMimeType});
-        newBurpBlobString = window.URL.createObjectURL(newBlob);
+        newBurpBlobString.set(window.URL.createObjectURL(newBlob));
 
         stopRecording = () => {
         };
@@ -134,10 +132,10 @@
       {/if}
     </div>
 
-    {#if newBurpBlobString}
+    {#if $newBurpBlobString}
       <div transition:slide>
         <p class="mt">Check your new Burp:</p>
-        <BurpPlayer {newBurpBlobString}/>
+        <BurpPlayer {$newBurpBlobString}/>
         <p class="mt">Save it?</p>
         <button on:click={onsave} class="icon-button green">
           <TiTick/>

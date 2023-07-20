@@ -9,7 +9,7 @@ import {
   query,
   updateDoc
 } from "firebase/firestore";
-import {readable} from "svelte/store";
+import {readable, writable} from "svelte/store";
 import {Burp} from "../types/Burp.js";
 import {authUser} from "$lib/store-users.js";
 
@@ -98,6 +98,8 @@ export function addReactionToFirebase(reaction, burp, authUser) {
 
   return updatedReactions;
 }
+
+export const newBurpBlobString = writable(null);
 
 export async function saveBurp(authUser, newBlob) {
   const supportedFileExtension = supportedAudioMimeType?.split('/')[1];
