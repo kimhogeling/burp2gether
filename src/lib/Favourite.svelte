@@ -19,7 +19,11 @@
 
 {#if burpUser.uid !== $authUser.uid}
   {#if isStarred}
-    <span class="star on" on:click={() => {removeMessageVisible = true}}
+    <span class="star on"
+          on:click={() => {removeMessageVisible = true}}
+          on:keydown={() => {removeMessageVisible = true}}
+          role="button"
+          tabindex="0"
           title="Remove from favourites">★</span>
     {#if removeMessageVisible}
       <div class="message">
@@ -36,6 +40,9 @@
   {#if !isStarred}
     <span class="star off"
           on:click={() => {addMessageVisible = true}}
+          on:keydown={() => {addMessageVisible = true}}
+          role="button"
+          tabindex="0"
           title="Add to favourites">☆</span>
     {#if addMessageVisible}
       <div class="message">

@@ -13,11 +13,15 @@
 </button>
 
 {#if showQrCode}
+  <span on:click|preventDefault={() => {showQrCode = false}}
+        on:keydown|preventDefault={() => {showQrCode = false}}
+        role="button"
+        tabindex="0">
   <img class="qr"
-       on:click={() => {showQrCode = false}}
        alt="QR Code to share the app"
        src="https://firebasestorage.googleapis.com/v0/b/burp2gether.appspot.com/o/burp2gether-qr.jpeg?alt=media&token=0403eb1a-063d-462d-a1b5-1eb30e3933d6"
        width="300"/>
+  </span>
 {/if}
 
 <style>
@@ -31,5 +35,6 @@
     width: 300px;
     padding: 15px;
     background: var(--color-four);
+    cursor: pointer;
   }
 </style>

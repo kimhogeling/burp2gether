@@ -32,7 +32,12 @@
   <div class="smileys">
     {#each REACTIONS as reaction}
       {#if !reaction.hide}
-      <span class="smiley" on:click={() => addReaction(reaction)} title={reaction.description}>
+      <span class="smiley"
+            on:click={() => addReaction(reaction)}
+            on:keydown={() => addReaction(reaction)}
+            role="button"
+            tabindex="0"
+            title={reaction.description}>
         {reaction.smiley}
         <span class="counter">{(burp.reactions || {})[reaction.key]?.length || ''}</span>
       </span>
@@ -40,7 +45,11 @@
     {/each}
   </div>
   <div class="big-smiley">
-    <span class="smiley big" on:click={() => addReaction(winnerReaction)}
+    <span class="smiley big"
+          on:click={() => addReaction(winnerReaction)}
+          on:keydown={() => addReaction(winnerReaction)}
+          role="button"
+          tabindex="0"
           title={winnerReaction.description}>
     {winnerReaction.smiley}
       <span class="counter">{(burp.reactions || {})[winnerReaction.key]?.length || ''}</span>
